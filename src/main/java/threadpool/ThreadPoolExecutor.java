@@ -202,7 +202,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * Handler called when saturated or shutdown in execute.
      */
-    private volatile map.RejectedExecutionHandler handler;
+    private volatile RejectedExecutionHandler handler;
 
     /**
      * Timeout in nanoseconds for idle threads waiting for work.
@@ -235,7 +235,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * The default rejected execution handler
      */
-    private static final map.RejectedExecutionHandler defaultHandler =
+    private static final RejectedExecutionHandler defaultHandler =
             new AbortPolicy();
 
     /**
@@ -990,7 +990,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                               long keepAliveTime,
                               TimeUnit unit,
                               BlockingQueue<Runnable> workQueue,
-                              map.RejectedExecutionHandler handler) {
+                              RejectedExecutionHandler handler) {
         this(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
                 Executors.defaultThreadFactory(), handler);
     }
@@ -1028,7 +1028,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                               TimeUnit unit,
                               BlockingQueue<Runnable> workQueue,
                               ThreadFactory threadFactory,
-                              map.RejectedExecutionHandler handler) {
+                              RejectedExecutionHandler handler) {
         if (corePoolSize < 0 ||
                 maximumPoolSize <= 0 ||
                 maximumPoolSize < corePoolSize ||
@@ -1218,7 +1218,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * @throws NullPointerException if handler is null
      * @see #getRejectedExecutionHandler
      */
-    public void setRejectedExecutionHandler(map.RejectedExecutionHandler handler) {
+    public void setRejectedExecutionHandler(RejectedExecutionHandler handler) {
         if (handler == null)
             throw new NullPointerException();
         this.handler = handler;
@@ -1230,7 +1230,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * @return the current handler
      * @see #setRejectedExecutionHandler
      */
-    public map.RejectedExecutionHandler getRejectedExecutionHandler() {
+    public RejectedExecutionHandler getRejectedExecutionHandler() {
         return handler;
     }
 
@@ -1715,7 +1715,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * unless the executor has been shut down, in which case the task
      * is discarded.
      */
-    public static class CallerRunsPolicy implements map.RejectedExecutionHandler {
+    public static class CallerRunsPolicy implements RejectedExecutionHandler {
         /**
          * Creates a {@code CallerRunsPolicy}.
          */
@@ -1740,7 +1740,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * A handler for rejected tasks that throws a
      * {@code RejectedExecutionException}.
      */
-    public static class AbortPolicy implements map.RejectedExecutionHandler {
+    public static class AbortPolicy implements RejectedExecutionHandler {
         /**
          * Creates an {@code AbortPolicy}.
          */
@@ -1765,7 +1765,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * A handler for rejected tasks that silently discards the
      * rejected task.
      */
-    public static class DiscardPolicy implements map.RejectedExecutionHandler {
+    public static class DiscardPolicy implements RejectedExecutionHandler {
         /**
          * Creates a {@code DiscardPolicy}.
          */
