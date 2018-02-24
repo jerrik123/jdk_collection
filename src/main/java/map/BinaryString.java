@@ -44,5 +44,7 @@ public class BinaryString {
         System.out.println();
         System.out.println("value: " + Integer.toBinaryString(((1 << 29) - 1)));//00011111111111111111111111111111
         System.out.println("~: " + Integer.toBinaryString(~((1 << 29) - 1)));//11100000000000000000000000000000
+
+        System.out.println("0<29");
     }
 }

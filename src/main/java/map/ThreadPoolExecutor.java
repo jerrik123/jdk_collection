@@ -60,7 +60,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
 
     // runState is stored in the high-order bits
     private static final int RUNNING = -1 << COUNT_BITS; //[111000000000000000000000000000000] => 10000000000000000000000000000001(原码) -> 11111111111111111111111111111111(补码) -> 11100000000000000000000000000000(左移29位)
-    private static final int SHUTDOWN = 0 << COUNT_BITS; // 11111111111111111111111111111011
+    private static final int SHUTDOWN = 0 << COUNT_BITS; // 00000000000000000000000000000000
     private static final int STOP = 1 << COUNT_BITS;  // 001000000000000000000000000000000
     private static final int TIDYING = 2 << COUNT_BITS;// 010000000000000000000000000000000
     private static final int TERMINATED = 3 << COUNT_BITS;// 011000000000000000000000000000000
