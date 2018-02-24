@@ -632,6 +632,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
         }
 
         System.out.println("ctl.get() over: " + Integer.toBinaryString(ctl.get()));
+
         boolean workerStarted = false;
         boolean workerAdded = false;
         Worker w = null;
@@ -844,6 +845,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      */
     final void runWorker(Worker w) {
         System.out.println("runWorker begin()...");
+
         Thread wt = Thread.currentThread();
         Runnable task = w.firstTask;
         w.firstTask = null;
@@ -865,6 +867,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                     beforeExecute(wt, task);
                     Throwable thrown = null;
                     try {
+                        System.out.println("---take: " + task);
                         task.run();
                     } catch (RuntimeException x) {
                         thrown = x;
