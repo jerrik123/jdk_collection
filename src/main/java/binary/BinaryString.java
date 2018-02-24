@@ -1,4 +1,4 @@
-package map;
+package binary;
 
 /**
  * Copyright 2018/2/24 lcfarm All Rights Reserved

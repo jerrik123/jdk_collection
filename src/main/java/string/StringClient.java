@@ -1,4 +1,4 @@
-package map;
+package string;
 
 /**
  * Copyright 2018/2/23 lcfarm All Rights Reserved
