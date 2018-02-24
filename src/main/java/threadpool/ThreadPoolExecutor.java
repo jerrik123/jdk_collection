@@ -33,7 +33,7 @@
  * http://creativecommons.org/publicdomain/zero/1.0/
  */
 
-package map;
+package threadpool;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -72,7 +72,9 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     // 11100000000000000000000000000000  &
     // 00011111111111111111111111111111
     private static int workerCountOf(int c) {
-        return c & CAPACITY;
+        int w =  c & CAPACITY;
+        System.out.println("workerCountOf: " + w);
+        return w;
     }
 
     private static int ctlOf(int rs, int wc) {//或
@@ -200,7 +202,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * Handler called when saturated or shutdown in execute.
      */
-    private volatile RejectedExecutionHandler handler;
+    private volatile map.RejectedExecutionHandler handler;
 
     /**
      * Timeout in nanoseconds for idle threads waiting for work.
@@ -233,7 +235,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     /**
      * The default rejected execution handler
      */
-    private static final RejectedExecutionHandler defaultHandler =
+    private static final map.RejectedExecutionHandler defaultHandler =
             new AbortPolicy();
 
     /**
@@ -603,9 +605,12 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
         retry:
         for (; ; ) {
             int c = ctl.get();
-            int rs = runStateOf(c);
+            System.out.println("ctl.get() addWorker: " + Integer.toBinaryString(c));
 
-            // Check if queue empty only if necessary.
+            int rs = runStateOf(c);
+            System.out.println("runStateOf addWorker: " + Integer.toBinaryString(rs));
+
+            // SHUTDOWN: 00000000000000000000000000000000
             if (rs >= SHUTDOWN &&
                     !(rs == SHUTDOWN &&
                             firstTask == null &&
@@ -617,7 +622,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                 if (wc >= CAPACITY ||
                         wc >= (core ? corePoolSize : maximumPoolSize))
                     return false;
-                if (compareAndIncrementWorkerCount(c))
+                if (compareAndIncrementWorkerCount(c))// 11100000000000000000000000000001 添加1个worker
                     break retry;
                 c = ctl.get();  // Re-read ctl
                 if (runStateOf(c) != rs)
@@ -626,6 +631,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
             }
         }
 
+        System.out.println("ctl.get() over: " + Integer.toBinaryString(ctl.get()));
         boolean workerStarted = false;
         boolean workerAdded = false;
         Worker w = null;
@@ -640,7 +646,9 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                     // Back out on ThreadFactory failure or if
                     // shut down before lock acquired.
                     int c = ctl.get();
+                    System.out.println("ctl.get() ReentrantLock: " + Integer.toBinaryString(c));
                     int rs = runStateOf(c);
+                    System.out.println("runStateOf ReentrantLock: " + Integer.toBinaryString(rs));
 
                     if (rs < SHUTDOWN ||
                             (rs == SHUTDOWN && firstTask == null)) {
@@ -747,6 +755,9 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     private Runnable getTask() {
         boolean timedOut = false; // Did the last poll() time out?
 
+        System.out.println();
+        System.out.println("getTask begin()...");
+
         retry:
         for (; ; ) {
             int c = ctl.get();
@@ -778,6 +789,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                 Runnable r = timed ?
                         workQueue.poll(keepAliveTime, TimeUnit.NANOSECONDS) :
                         workQueue.take();
+                System.out.println("从队列取出一个任务: " + r);
                 if (r != null)
                     return r;
                 timedOut = true;
@@ -831,6 +843,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * @param w the worker
      */
     final void runWorker(Worker w) {
+        System.out.println("runWorker begin()...");
         Thread wt = Thread.currentThread();
         Runnable task = w.firstTask;
         w.firstTask = null;
@@ -977,7 +990,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                               long keepAliveTime,
                               TimeUnit unit,
                               BlockingQueue<Runnable> workQueue,
-                              RejectedExecutionHandler handler) {
+                              map.RejectedExecutionHandler handler) {
         this(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
                 Executors.defaultThreadFactory(), handler);
     }
@@ -1015,7 +1028,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
                               TimeUnit unit,
                               BlockingQueue<Runnable> workQueue,
                               ThreadFactory threadFactory,
-                              RejectedExecutionHandler handler) {
+                              map.RejectedExecutionHandler handler) {
         if (corePoolSize < 0 ||
                 maximumPoolSize <= 0 ||
                 maximumPoolSize < corePoolSize ||
@@ -1048,34 +1061,17 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
     public void execute(Runnable command) {
         if (command == null)
             throw new NullPointerException();
-        /*
-         * Proceed in 3 steps:
-         *
-         * 1. If fewer than corePoolSize threads are running, try to
-         * start a new thread with the given command as its first
-         * task.  The call to addWorker atomically checks runState and
-         * workerCount, and so prevents false alarms that would add
-         * threads when it shouldn't, by returning false.
-         *
-         * 2. If a task can be successfully queued, then we still need
-         * to double-check whether we should have added a thread
-         * (because existing ones died since last checking) or that
-         * the pool shut down since entry into this method. So we
-         * recheck state and if necessary roll back the enqueuing if
-         * stopped, or start a new thread if there are none.
-         *
-         * 3. If we cannot queue task, then we try to add a new
-         * thread.  If it fails, we know we are shut down or saturated
-         * and so reject the task.
-         */
-        int c = ctl.get();
+        int c = ctl.get();//11100000000000000000000000000000
+        System.out.println("ctl.get() step 1: " + Integer.toBinaryString(c));
         if (workerCountOf(c) < corePoolSize) {
             if (addWorker(command, true))
                 return;
             c = ctl.get();
+            System.out.println("ctl.get() step 2: " + Integer.toBinaryString(c));
         }
         if (isRunning(c) && workQueue.offer(command)) {
             int recheck = ctl.get();
+            System.out.println("ctl.get() step 3: " + Integer.toBinaryString(recheck));
             if (!isRunning(recheck) && remove(command))
                 reject(command);
             else if (workerCountOf(recheck) == 0)
@@ -1222,7 +1218,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * @throws NullPointerException if handler is null
      * @see #getRejectedExecutionHandler
      */
-    public void setRejectedExecutionHandler(RejectedExecutionHandler handler) {
+    public void setRejectedExecutionHandler(map.RejectedExecutionHandler handler) {
         if (handler == null)
             throw new NullPointerException();
         this.handler = handler;
@@ -1234,7 +1230,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * @return the current handler
      * @see #setRejectedExecutionHandler
      */
-    public RejectedExecutionHandler getRejectedExecutionHandler() {
+    public map.RejectedExecutionHandler getRejectedExecutionHandler() {
         return handler;
     }
 
@@ -1719,7 +1715,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * unless the executor has been shut down, in which case the task
      * is discarded.
      */
-    public static class CallerRunsPolicy implements RejectedExecutionHandler {
+    public static class CallerRunsPolicy implements map.RejectedExecutionHandler {
         /**
          * Creates a {@code CallerRunsPolicy}.
          */
@@ -1744,7 +1740,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * A handler for rejected tasks that throws a
      * {@code RejectedExecutionException}.
      */
-    public static class AbortPolicy implements RejectedExecutionHandler {
+    public static class AbortPolicy implements map.RejectedExecutionHandler {
         /**
          * Creates an {@code AbortPolicy}.
          */
@@ -1769,7 +1765,7 @@ public class ThreadPoolExecutor extends AbstractExecutorService {
      * A handler for rejected tasks that silently discards the
      * rejected task.
      */
-    public static class DiscardPolicy implements RejectedExecutionHandler {
+    public static class DiscardPolicy implements map.RejectedExecutionHandler {
         /**
          * Creates a {@code DiscardPolicy}.
          */
